@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.internal.trimSubstring
 import org.jsoup.Jsoup
+import java.io.File
 import java.io.InputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -56,12 +57,16 @@ class BroadcastService(
     }
 
     private fun fetchBroadcast(broadcast: Broadcast) {
+        val targetMp3Path = filePathForBroadcast(broadcast)
+        if(File(targetMp3Path).exists()) {
+            logger.info("Broadcast \"${broadcast.streamTitle}\" has been already downloaded")
+            return
+        }
         println("New Broadcast found: $broadcast")
         val request = Request.Builder().url(broadcast.streamUrl).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) logger.severe("     Failed to fetch audio file for broadcast $broadcast")
             else {
-                val targetMp3Path = filePathForBroadcast(broadcast)
                 if (writeBroadcastToFile(response.body!!.byteStream(), targetMp3Path)){
                     if(writeTags(broadcastToTagModel(broadcast), targetMp3Path)) {
                         println("File saved at path: $targetMp3Path")
