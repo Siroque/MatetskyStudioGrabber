@@ -26,4 +26,8 @@ object FileUtilities {
             FileUtils.cleanDirectory(dir)
         }
     }
+
+    fun validateDirectoryPath(path: String): String {
+        return path.replace(Regex("[?|<>]"), "")
+    }
 }

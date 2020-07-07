@@ -2,19 +2,21 @@ package com.github.siroque.mateckystudiograbber
 
 import com.github.siroque.mateckystudiograbber.Mp3TagWriter.writeTags
 import com.github.siroque.mateckystudiograbber.utils.DateTimeUtils
-import java.time.DayOfWeek
-import java.time.LocalDate
-import com.github.siroque.mateckystudiograbber.utils.*
+import com.github.siroque.mateckystudiograbber.utils.FileUtilities
+import com.github.siroque.mateckystudiograbber.utils.rangeTo
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.internal.trimSubstring
 import org.jsoup.Jsoup
 import java.io.File
 import java.io.InputStream
-import java.time.LocalDateTime
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.logging.Logger
+import kotlin.math.*
 
 class BroadcastService(
     val outputPath: String
@@ -23,10 +25,31 @@ class BroadcastService(
 
     fun fetchBroadcasts() {
         FileUtilities.makeSureDirectoryExists(outputPath)
-        val lastSundayDate = DateTimeUtils.getLastDayOfWeekDate(DayOfWeek.SATURDAY)
+        val lastSaturdayDate = DateTimeUtils.getLastDayOfWeekDate(DayOfWeek.SATURDAY)
         imageStream = fetchImageStream("https://cdn-st2.rtr-vesti.ru/vh/pictures/q/717/169.jpg", client)
-        for (date in lastSundayDate..lowerDateRangeBoundary) {
-            extractBroadcast(date)
+        val dayCount = ChronoUnit.DAYS.between(lowerDateRangeBoundary, lastSaturdayDate)
+        var progressCounter = 0
+        for ((counter, date) in (lastSaturdayDate..lowerDateRangeBoundary).withIndex()) {
+            val currentProgress = floor(counter / (dayCount / 100.0)).toInt()
+            if (progressCounter != currentProgress) {
+                progressCounter = currentProgress
+                println("Progress: $currentProgress% ($date)")
+            }
+            if(!broadcastsAtDateAlreadySnatched(date)) extractBroadcast(date)
+        }
+    }
+
+    private fun broadcastsAtDateAlreadySnatched(date: LocalDate): Boolean {
+        return try {
+            val result = File(outputPath)
+                    .listFiles()
+                    ?.filter{ !it.isDirectory }
+                    ?.any {
+                        it.name.contains(date.format(filePrefixDateFormatter))
+                    }
+            result ?: false
+        } catch (ex: Exception){
+            false
         }
     }
 
@@ -98,8 +121,7 @@ class BroadcastService(
     private fun filePathForBroadcast(broadcast: Broadcast): String {
         val filenamePrefix = "${broadcast.date.format(filePrefixDateFormatter)}_${broadcast.startTime}-${broadcast.endTime}"
         val legalFileName= ("$filenamePrefix ${broadcast.streamTitle}").replace(Regex("[:\\\\/*\"?|<>]"), "_")
-        val legalPath = outputPath.replace(Regex("[?|<>]"), "")
-        return "${legalPath}/${legalFileName}.mp3"
+        return "${outputPath}/${legalFileName}.mp3"
     }
 
     private fun writeBroadcastToFile(inputStream: InputStream, outputFilePath: String): Boolean {
