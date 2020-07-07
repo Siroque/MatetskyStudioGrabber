@@ -26,7 +26,7 @@ class BroadcastService(
     fun fetchBroadcasts() {
         FileUtilities.makeSureDirectoryExists(outputPath)
         val lastSaturdayDate = DateTimeUtils.getLastDayOfWeekDate(DayOfWeek.SATURDAY)
-        imageStream = fetchImageStream("https://cdn-st2.rtr-vesti.ru/vh/pictures/q/717/169.jpg", client)
+        imageStream = fetchImageStream()
         val dayCount = ChronoUnit.DAYS.between(lowerDateRangeBoundary, lastSaturdayDate)
         var progressCounter = 0
         for ((counter, date) in (lastSaturdayDate..lowerDateRangeBoundary).withIndex()) {
@@ -133,14 +133,11 @@ class BroadcastService(
         return outputFile.exists()
     }
 
-    private fun fetchImageStream(imgUrl: String?, client: OkHttpClient): ByteArray? {
-        imgUrl?.let{
-            client.newCall(Request.Builder().url(imgUrl).build()).execute().use { response ->
-                return if (!response.isSuccessful) null
-                else response.body!!.byteStream().readBytes()
-            }
+    private fun fetchImageStream(): ByteArray? {
+        client.newCall(Request.Builder().url("https://cdn-st2.rtr-vesti.ru/vh/pictures/q/717/169.jpg").build()).execute().use { response ->
+            return if (!response.isSuccessful) null
+            else response.body!!.byteStream().readBytes()
         }
-        return null
     }
 
     private companion object {
