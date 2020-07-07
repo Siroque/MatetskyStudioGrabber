@@ -19,7 +19,7 @@ import java.util.logging.Logger
 import kotlin.math.*
 
 class BroadcastService(
-    val outputPath: String
+        private val outputPath: String
 ) {
     private var imageStream: ByteArray? = null
 
@@ -53,7 +53,7 @@ class BroadcastService(
         }
     }
 
-    fun extractBroadcast(date: LocalDate) {
+    private fun extractBroadcast(date: LocalDate) {
         val url = schedulerPath + "/" + date.format(schedulerPathDateFormatter)
         Jsoup.connect(url).get().run {
             if (select(".b-schedule__error").text().isNotEmpty()) return
