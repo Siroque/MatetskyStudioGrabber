@@ -81,10 +81,6 @@ class BroadcastService(
 
     private fun fetchBroadcast(broadcast: Broadcast) {
         val targetMp3Path = filePathForBroadcast(broadcast)
-        if(File(targetMp3Path).exists()) {
-            logger.info("Broadcast \"${broadcast.streamTitle}\" has been already downloaded")
-            return
-        }
         println("New Broadcast found: $broadcast")
         val request = Request.Builder().url(broadcast.streamUrl).build()
         client.newCall(request).execute().use { response ->
