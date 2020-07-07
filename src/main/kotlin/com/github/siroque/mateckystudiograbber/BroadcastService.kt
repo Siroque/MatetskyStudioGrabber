@@ -141,10 +141,10 @@ class BroadcastService(
     }
 
     private companion object {
-        val lowerDateRangeBoundary = LocalDate.of(2012, 12,31)
-        val schedulerPath = "https://radiomayak.ru/shows/show/id/59088/date"
-        val schedulerPathDateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale("ru"))
-        val filePrefixDateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale("ru"))
+        const val schedulerPath = "https://radiomayak.ru/shows/show/id/59088/date"
+        val lowerDateRangeBoundary: LocalDate = LocalDate.of(2012, 12,31)
+        val schedulerPathDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale("ru"))
+        val filePrefixDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale("ru"))
         val logger: Logger = Logger.getLogger("com.github.siroque.mateckystudiograbber.BroadcastService")
         val client = OkHttpClient()
     }
