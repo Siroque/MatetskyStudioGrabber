@@ -74,7 +74,7 @@ class BroadcastService(
                     }
                 }
             } catch (e:Exception){
-                print("No error page but null pointer for property: $url")
+                println("No error page but null pointer for property: $url")
             }
         }
     }
